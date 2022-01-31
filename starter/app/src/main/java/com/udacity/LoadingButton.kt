@@ -1,11 +1,14 @@
 package com.udacity
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
 class LoadingButton @JvmOverloads constructor(
@@ -17,13 +20,13 @@ class LoadingButton @JvmOverloads constructor(
     private var cHeight = 0
     private val buttonColor =
         ResourcesCompat.getColor(resources, R.color.colorPrimary, context.theme)
-    private val loadingColor =
+    private var loadingColor =
         ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, context.theme)
-    private val loadingCircleColor =
+    private var loadingCircleColor =
         ResourcesCompat.getColor(resources, R.color.colorAccent, context.theme)
     private val loadingString = resources.getString(R.string.button_loading)
     private val buttonString = resources.getString(R.string.button_name)
-    private val textColor = ResourcesCompat.getColor(resources, R.color.white, context.theme)
+    private var textColor = ResourcesCompat.getColor(resources, R.color.white, context.theme)
     private var buttonRect = Rect()
     private val loadingRect = Rect()
     private val loadingCircle = RectF()
@@ -47,11 +50,9 @@ class LoadingButton @JvmOverloads constructor(
     }
     private val paintLoading = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = loadingColor
     }
     private val paintLoadingCircle = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = loadingCircleColor
     }
     private var valueAnimator = ValueAnimator()
     private var buttonState: ButtonState by Delegates.observable(ButtonState.Completed) { _, _, new ->
@@ -71,12 +72,13 @@ class LoadingButton @JvmOverloads constructor(
                         }
                     }
                 valueAnimator.start()
+                isClickable = false
             }
-            // TODO Review after implementing button in MainActivity -> should stop animation
             ButtonState.Completed -> {
                 // Cancel Animation
                 valueAnimator.cancel()
                 progress = 0F
+                isClickable = true
                 invalidate()
             }
         }
@@ -84,7 +86,24 @@ class LoadingButton @JvmOverloads constructor(
 
     init {
         isClickable = true
-        buttonState = ButtonState.Loading
+        buttonState = ButtonState.Completed
+
+        context.withStyledAttributes(attrs, R.styleable.LoadingButton) {
+            loadingColor = getColor(R.styleable.LoadingButton_buttonloadingColor, loadingColor)
+            loadingCircleColor =
+                getColor(R.styleable.LoadingButton_circleLoadingColor, loadingCircleColor)
+            textColor = getColor(R.styleable.LoadingButton_textColorColor, textColor)
+        }
+
+        paintLoadingCircle.color = loadingCircleColor
+        paintLoading.color = loadingColor
+    }
+
+    fun changeButtonState(state: ButtonState) {
+        if (buttonState != state) {
+            buttonState = state
+            invalidate()
+        }
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -158,4 +177,15 @@ class LoadingButton @JvmOverloads constructor(
         setMeasuredDimension(w, h)
     }
 
+    private fun ValueAnimator.disableViewDuringAnimation(view: View) {
+        addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationStart(animation: Animator?) {
+                view.isEnabled = false
+            }
+
+            override fun onAnimationEnd(animation: Animator?) {
+                view.isEnabled = true
+            }
+        })
+    }
 }
