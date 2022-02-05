@@ -1,20 +1,26 @@
 package com.udacity
 
 import android.app.DownloadManager
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.database.Cursor
+import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
 import com.udacity.databinding.ActivityMainBinding
+import com.udacity.util.sendNotification
 
 private const val TAG = "MainActivity"
 
@@ -28,18 +34,29 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
     private lateinit var loadingButton: LoadingButton
+    private var downloadedUrl: String? = null
+    lateinit var downloadManager: DownloadManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
 
+        notificationManager = ContextCompat.getSystemService(
+            applicationContext,
+            NotificationManager::class.java
+        ) as NotificationManager
+
+        downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+
+        createChannel(getString(R.string.notification_channel_id), getString(R.string.app_name))
+
         loadingButton = binding.contentMain.customButton
+
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
         loadingButton.setOnClickListener {
             checkRadioButton()
-            Log.d(TAG, "onCreate: Button Clicked!")
         }
     }
 
@@ -51,9 +68,18 @@ class MainActivity : AppCompatActivity() {
     private fun checkRadioButton() {
         val radioGroup = binding.contentMain.radioGroup
         when (radioGroup.checkedRadioButtonId) {
-            R.id.button_glide -> download(GLIDE_URL)
-            R.id.button_loadApp -> download(LOADAPP_URL)
-            R.id.button_retrofit -> download(RETROFIT_URL)
+            R.id.button_glide -> {
+                download(GLIDE_URL)
+                downloadedUrl = "Glide"
+            }
+            R.id.button_loadApp -> {
+                download(LOADAPP_URL)
+                downloadedUrl = "LoadApp"
+            }
+            R.id.button_retrofit -> {
+                download(RETROFIT_URL)
+                downloadedUrl = "Retrofit"
+            }
             else -> {
                 loadingButton.changeButtonState(ButtonState.Completed)
                 Toast.makeText(this, getString(R.string.toast_error_text),
@@ -64,15 +90,57 @@ class MainActivity : AppCompatActivity() {
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            var status: Int? = null
+            var statusMessage = ""
+            var columnTitle: String = ""
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+
             if (id == downloadID) {
-                loadingButton.changeButtonState(ButtonState.Completed)
+                //DownloadManager.Query() is used to filter DownloadManager queries
+                val query = id.let { DownloadManager.Query().setFilterById(it) }
+
+                var cursor: Cursor? = null
+                try {
+                    cursor = downloadManager.query(query)
+
+                    if (cursor.moveToFirst()) {
+                        val column = cursor.getColumnIndex(DownloadManager.COLUMN_TITLE)
+
+                        columnTitle = if (column >= 0) {
+                            cursor.getString(column)
+                        } else {
+                            "No Title"
+                        }
+                        status =
+                            cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                    }
+                } finally {
+                    cursor?.close()
+                }
+            }
+
+            when (status) {
+                DownloadManager.STATUS_SUCCESSFUL -> {
+                    statusMessage = "Success"
+                    loadingButton.changeButtonState(ButtonState.Completed)
+                    notificationManager.sendNotification(downloadedUrl!!,
+                        this@MainActivity,
+                        statusMessage)
+                }
+                DownloadManager.STATUS_FAILED -> {
+                    statusMessage = "Fail"
+                    loadingButton.changeButtonState(ButtonState.Completed)
+                    notificationManager.sendNotification(downloadedUrl!!,
+                        this@MainActivity,
+                        statusMessage)
+                }
             }
         }
     }
 
     private fun download(url: String) {
         loadingButton.changeButtonState(ButtonState.Loading)
+        changeRadioGroupState()
         val request =
             DownloadManager.Request(Uri.parse(url))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
@@ -84,9 +152,33 @@ class MainActivity : AppCompatActivity() {
 
         loadingButton.changeButtonState(ButtonState.Loading)
 
-        val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+    }
+
+    private fun changeRadioGroupState() {
+        val radioGroup = binding.contentMain.radioGroup
+        radioGroup.children.forEach {
+            it.setEnabled(false)
+        }
+    }
+
+    private fun createChannel(channelId: String, channelName: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                setShowBadge(false)
+                enableLights(true)
+                lightColor = Color.RED
+                enableVibration(true)
+                description = getString(R.string.app_description)
+            }
+            notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
     }
 
     companion object {
@@ -96,7 +188,7 @@ class MainActivity : AppCompatActivity() {
             "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
         private const val RETROFIT_URL =
             "https://github.com/square/retrofit/archive/master.zip"
-        private const val CHANNEL_ID = "channelId"
+//        private const val CHANNEL_ID = "channelId"
     }
 
 }
