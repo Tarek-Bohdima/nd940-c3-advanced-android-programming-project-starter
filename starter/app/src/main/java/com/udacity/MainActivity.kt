@@ -70,15 +70,15 @@ class MainActivity : AppCompatActivity() {
         when (radioGroup.checkedRadioButtonId) {
             R.id.button_glide -> {
                 download(GLIDE_URL)
-                downloadedUrl = "Glide"
+                downloadedUrl = getString(R.string.radio_label_glide)
             }
             R.id.button_loadApp -> {
                 download(LOADAPP_URL)
-                downloadedUrl = "LoadApp"
+                downloadedUrl = getString(R.string.radio_label_loadApp)
             }
             R.id.button_retrofit -> {
                 download(RETROFIT_URL)
-                downloadedUrl = "Retrofit"
+                downloadedUrl = getString(R.string.radio_label_retrofit)
             }
             else -> {
                 loadingButton.changeButtonState(ButtonState.Completed)
@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity() {
         private const val LOADAPP_URL =
             "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
         private const val RETROFIT_URL =
-            "https://github.com/square/retrofit/archive/master.zip"
+            "https://github.com/square/retrofit"
 //        private const val CHANNEL_ID = "channelId"
     }
 

@@ -10,8 +10,8 @@ import com.udacity.R
 
 // Notification ID.
 private const val NOTIFICATION_ID = 0
-private const val DOWNLOADED_FILENAME_KEY = "DOWNLOADED_FILENAME_KEY"
-private const val DOWNLOAD_STATUS_KEY = "DOWNLOAD_MESSAGE_KEY"
+const val DOWNLOADED_FILENAME_KEY = "DOWNLOADED_FILENAME_KEY"
+const val DOWNLOAD_STATUS_KEY = "DOWNLOAD_MESSAGE_KEY"
 
 fun NotificationManager.sendNotification(
     message: String,
