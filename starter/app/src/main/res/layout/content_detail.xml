@@ -5,6 +5,13 @@
 
     <data>
 
+        <variable
+            name="downloadedFileData"
+            type="String" />
+
+        <variable
+            name="statusData"
+            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -14,5 +21,61 @@
         tools:context=".DetailActivity"
         tools:showIn="@layout/activity_detail">
 
+        <TextView
+            android:id="@+id/text_label_file_name"
+            style="@style/detail_text_label"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/text_label_file_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_label_status"
+            style="@style/detail_text_label"
+            android:text="@string/text_label_status"
+            app:layout_constraintBaseline_toBaselineOf="@+id/text_status"
+            app:layout_constraintStart_toStartOf="@+id/text_label_file_name" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="200dp" />
+
+        <TextView
+            android:id="@+id/text_file_name"
+            style="@style/detail_text"
+            android:text="@{downloadedFileData}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline2"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/radio_label_retrofit" />
+
+        <TextView
+            android:id="@+id/text_status"
+            style="@style/detail_text"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@{statusData}"
+            app:layout_constraintStart_toStartOf="@+id/guideline2"
+            app:layout_constraintTop_toBottomOf="@+id/text_file_name"
+            tools:text="Success" />
+
+
+        <Button
+            android:id="@+id/button_back"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="@color/colorAccent"
+            android:text="@string/detail_button_text"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_status"
+            app:layout_constraintVertical_bias="0.92" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
