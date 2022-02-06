@@ -3,7 +3,6 @@ package com.udacity
 import android.app.DownloadManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -15,14 +14,12 @@ import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
 import com.udacity.databinding.ActivityMainBinding
 import com.udacity.util.sendNotification
 
-private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,8 +28,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var notificationManager: NotificationManager
-    private lateinit var pendingIntent: PendingIntent
-    private lateinit var action: NotificationCompat.Action
     private lateinit var loadingButton: LoadingButton
     private var downloadedUrl: String? = null
     lateinit var downloadManager: DownloadManager
@@ -91,8 +86,7 @@ class MainActivity : AppCompatActivity() {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             var status: Int? = null
-            var statusMessage = ""
-            var columnTitle: String = ""
+            val statusMessage: String
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
 
             if (id == downloadID) {
@@ -104,13 +98,6 @@ class MainActivity : AppCompatActivity() {
                     cursor = downloadManager.query(query)
 
                     if (cursor.moveToFirst()) {
-                        val column = cursor.getColumnIndex(DownloadManager.COLUMN_TITLE)
-
-                        columnTitle = if (column >= 0) {
-                            cursor.getString(column)
-                        } else {
-                            "No Title"
-                        }
                         status =
                             cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
                     }
@@ -119,21 +106,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            when (status) {
-                DownloadManager.STATUS_SUCCESSFUL -> {
-                    statusMessage = "Success"
-                    loadingButton.changeButtonState(ButtonState.Completed)
-                    notificationManager.sendNotification(downloadedUrl!!,
-                        this@MainActivity,
-                        statusMessage)
-                }
-                DownloadManager.STATUS_FAILED -> {
-                    statusMessage = "Fail"
-                    loadingButton.changeButtonState(ButtonState.Completed)
-                    notificationManager.sendNotification(downloadedUrl!!,
-                        this@MainActivity,
-                        statusMessage)
-                }
+            if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                statusMessage = "Success"
+                loadingButton.changeButtonState(ButtonState.Completed)
+                notificationManager.sendNotification(downloadedUrl!!,
+                    this@MainActivity,
+                    statusMessage)
+            }
+            else if (status == DownloadManager.STATUS_FAILED) {
+                statusMessage = "Fail"
+                loadingButton.changeButtonState(ButtonState.Completed)
+                notificationManager.sendNotification(downloadedUrl!!,
+                    this@MainActivity,
+                    statusMessage)
             }
         }
     }
@@ -159,7 +144,7 @@ class MainActivity : AppCompatActivity() {
     private fun changeRadioGroupState() {
         val radioGroup = binding.contentMain.radioGroup
         radioGroup.children.forEach {
-            it.setEnabled(false)
+            it.isEnabled = false
         }
     }
 
@@ -183,12 +168,11 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val GLIDE_URL =
-            "https://github.com/bumptech/glide/archive/master.zip"
+            "https://github.com/bumptech/glide"
         private const val LOADAPP_URL =
-            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
+            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter"
         private const val RETROFIT_URL =
             "https://github.com/square/retrofit"
-//        private const val CHANNEL_ID = "channelId"
     }
 
 }

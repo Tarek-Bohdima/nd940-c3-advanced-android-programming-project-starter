@@ -1,7 +1,5 @@
 package com.udacity
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
@@ -175,17 +173,5 @@ class LoadingButton @JvmOverloads constructor(
         widthSize = w
         heightSize = h
         setMeasuredDimension(w, h)
-    }
-
-    private fun ValueAnimator.disableViewDuringAnimation(view: View) {
-        addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator?) {
-                view.isEnabled = false
-            }
-
-            override fun onAnimationEnd(animation: Animator?) {
-                view.isEnabled = true
-            }
-        })
     }
 }
