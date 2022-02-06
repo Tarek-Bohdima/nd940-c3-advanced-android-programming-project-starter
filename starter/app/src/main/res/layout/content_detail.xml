@@ -14,9 +14,11 @@
             type="String" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.constraintlayout.motion.widget.MotionLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:layoutDescription="@xml/content_detail_xml_constraintlayout_scene"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context=".DetailActivity"
         tools:showIn="@layout/activity_detail">
@@ -48,21 +50,19 @@
             android:id="@+id/text_file_name"
             style="@style/detail_text"
             android:text="@{downloadedFileData}"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/guideline2"
-            app:layout_constraintTop_toTopOf="parent"
+            tools:layout_editor_absoluteX="208dp"
+            tools:layout_editor_absoluteY="32dp"
             tools:text="@string/radio_label_retrofit" />
+
 
         <TextView
             android:id="@+id/text_status"
             style="@style/detail_text"
             android:layout_width="wrap_content"
-            android:layout_marginTop="24dp"
             android:text="@{statusData}"
-            app:layout_constraintStart_toStartOf="@+id/guideline2"
-            app:layout_constraintTop_toBottomOf="@+id/text_file_name"
+            tools:layout_editor_absoluteX="208dp"
+            tools:layout_editor_absoluteY="134dp"
             tools:text="Success" />
-
 
         <Button
             android:id="@+id/button_back"
@@ -77,5 +77,5 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_status"
             app:layout_constraintVertical_bias="0.92" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.motion.widget.MotionLayout>
 </layout>
